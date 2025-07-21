@@ -9,11 +9,11 @@ A high-performance, neuromorphic computing framework implementing Spiking Hyperg
 
 ## Overview
 
-SHGNN is a revolutionary approach to neuromorphic computing that combines the biological realism of spiking neural networks with the computational power of hypergraph structures. Built in Rust, it achieves true neuromorphic efficiency through event-driven computation, zero-cost abstractions, and memory-safe spike routing.
+SHGNN is a blah blah blah neuromorphic computing that blah blah blah biological realism? of spiking neural networks with the something better of hypergraph structures. Built in Rust, it achieves  neuromorphic efficiency through event-driven computation, zero-cost abstractions, and memory-safe spike routing.
 
 ### Key Features
 
-- **🚀 High Performance**: 10-15x faster than equivalent Python implementations
+- **🚀 High Performance**:  (untested but shouid be at least) 10-15x faster than equivalent Python implementations
 - **⚡ Event-Driven**: Asynchronous spike processing with sub-millisecond latency  
 - **🔬 Biologically Realistic**: Accurate membrane dynamics and STDP learning
 - **🌐 Multi-Platform**: Runs on embedded devices, desktops, and web browsers
