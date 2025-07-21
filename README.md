@@ -152,7 +152,7 @@ SHGNN implements a sophisticated neuromorphic architecture:
 3. **Plasticity Rules**: STDP, Homeostatic, BCM, Oja
 4. **Encoding Schemes**: Rate-based, Temporal, Population, Phase
 
-## 📊 Performance
+## 📊 Performance (Aiming for)
 
 Benchmark results on Intel i7-10700K with 10,000 neuron network:
 
@@ -174,7 +174,7 @@ Benchmark results on Intel i7-10700K with 10,000 neuron network:
 | **Embedded ARM** | ✅ Core | No-std, real-time guarantees |
 | **RISC-V** | 🔄 WIP | Experimental support |
 
-## 📚 Documentation
+## 📚 Documentation 
 
 - **[API Documentation](https://docs.rs/shgnn)** - Complete API reference
 - **[User Guide](docs/guide/README.md)** - Getting started and tutorials
@@ -191,7 +191,7 @@ Check out our comprehensive examples:
 - **[Edge AI](examples/edge-ai/)** - Embedded pattern recognition
 - **[BCI Demo](examples/bci-demo/)** - Brain-computer interface
 
-## 🤝 Contributing
+## 🤝 Contributing 
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
@@ -227,17 +227,18 @@ at your option.
 
 ## 🙏 Acknowledgments
 
-- Inspired by biological neural networks and neuromorphic computing research
+- Inspired by deep desire to assert my intellectiual dominance over chatgpt's bitch ass.....
+- https://ncg.ucsc.edu/ biological neural networks and neuromorphic computing research....
 - Built with the amazing Rust ecosystem
-- Special thanks to the neuromorphic computing community
+  
 
 ## 📞 Contact
 
-- **Website**: [https://shgnn.org](https://shgnn.org)
-- **Documentation**: [https://docs.rs/shgnn](https://docs.rs/shgnn)
-- **Issues**: [GitHub Issues](https://github.com/shgnn/shgnn/issues)
+- **Website**: 
+- **Documentation**: 
+- **Issues**: [GitHub Issues](https://github.com/shnn-project/shgnn/shgnn/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/shgnn/shgnn/discussions)
 
 ---
 
-*SHGNN: Bridging biological intelligence and artificial systems through neuromorphic computing.*
+*SHGNN: Bridging something and something else systems through neuromorphic computing.*
