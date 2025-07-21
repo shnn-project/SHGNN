@@ -5,11 +5,11 @@
 //! buffers, and cache-friendly data structures.
 
 use crate::{
-    error::{Result, SHNNError},
+    error::Result,
     spike::{NeuronId, Spike, TimedSpike},
     time::Time,
 };
-use core::{fmt, mem, ptr};
+use core::{fmt, mem};
 
 #[cfg(feature = "std")]
 use std::collections::VecDeque;

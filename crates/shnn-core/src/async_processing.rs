@@ -7,16 +7,14 @@ use crate::{
     error::{Result, SHNNError},
     spike::{NeuronId, Spike, TimedSpike, SpikeTrain},
     time::{Time, Duration},
-    hypergraph::{HypergraphNetwork, SpikeRoute},
+    hypergraph::HypergraphNetwork,
     neuron::{Neuron, NeuronPool, LIFNeuron},
     memory::{SpikeQueue, SpikeBuffer},
 };
 
 #[cfg(feature = "std")]
 use std::{
-    collections::{HashMap, VecDeque},
-    sync::{Arc, Mutex},
-    time::Instant,
+    collections::VecDeque,
 };
 
 use core::{
@@ -49,14 +47,18 @@ pub enum SpikeEvent {
     Spike(TimedSpike),
     /// Neuron update event
     Update {
+        /// Neuron identifier for the spike event
         neuron_id: NeuronId,
+        /// Timestamp when the spike occurred
         time: Time,
     },
     /// Network synchronization event
     Sync(Time),
     /// Processing complete event
     Complete {
+        /// Number of spikes processed in this batch
         processed_spikes: usize,
+        /// Total time elapsed for processing
         elapsed_time: Duration,
     },
 }
@@ -183,7 +185,7 @@ impl<'a> Future for SpikeChannelReceiver<'a> {
 /// Async neural network processor
 pub struct AsyncNeuralNetwork {
     /// Neuron pool
-    neurons: NeuronPool,
+    neurons: NeuronPool<LIFNeuron>,
     /// Hypergraph connectivity
     hypergraph: HypergraphNetwork,
     /// Event channel
@@ -214,7 +216,8 @@ impl AsyncNeuralNetwork {
     
     /// Add a neuron to the network
     pub fn add_neuron(&mut self, neuron: LIFNeuron) -> Result<()> {
-        self.neurons.add_lif_neuron(neuron)
+        self.neurons.add_neuron(neuron);
+        Ok(())
     }
     
     /// Get mutable access to hypergraph
@@ -232,11 +235,13 @@ impl AsyncNeuralNetwork {
         let mut output_spikes = Vec::new();
         
         // Process each route
+        let dt = 1000; // 1 microsecond timestep
         for route in routes {
             for &target_id in &route.targets {
-                if let Some(neuron) = self.neurons.get_lif_neuron_mut(target_id) {
-                    if let Some(output) = neuron.process_spike(&spike, route.delivery_time) {
-                        output_spikes.push(output);
+                if let Some(neuron) = self.neurons.get_neuron_mut(target_id.0 as usize) {
+                    neuron.integrate(1.0, dt); // Simple integration
+                    if let Some(output) = neuron.update(dt) {
+                        output_spikes.push(output.clone());
                         
                         // Add to spike buffer
                         let timed_spike = TimedSpike::new(output.clone(), route.delivery_time);
@@ -286,7 +291,7 @@ impl AsyncNeuralNetwork {
         self.current_time = new_time;
         
         // Update all neurons
-        self.neurons.update_all(new_time, dt);
+        self.neurons.update_all(dt.as_nanos() as u64);
         
         // Process any ready spikes from queue
         let ready_spikes = self.spike_queue.pop_ready(new_time);
@@ -508,6 +513,7 @@ impl SpikeStreamProcessor {
         self.input_buffer.len() as f32 / self.capacity as f32
     }
     
+    /// Calculate output utilization ratio
     pub fn output_utilization(&self) -> f32 {
         self.output_buffer.len() as f32 / self.capacity as f32
     }
@@ -624,10 +630,7 @@ mod tests {
     fn test_async_network() {
         let mut network = AsyncNeuralNetwork::new();
         
-        let neuron = LIFNeuron::new(
-            NeuronId::new(0),
-            LIFConfig::default()
-        ).unwrap();
+        let neuron = LIFNeuron::new(NeuronId::new(0));
         
         assert!(network.add_neuron(neuron).is_ok());
         assert_eq!(network.stats().spikes_processed, 0);
@@ -637,10 +640,7 @@ mod tests {
     async fn test_spike_processing() {
         let mut network = AsyncNeuralNetwork::new();
         
-        let neuron = LIFNeuron::new(
-            NeuronId::new(0),
-            LIFConfig::default()
-        ).unwrap();
+        let neuron = LIFNeuron::new(NeuronId::new(0));
         
         network.add_neuron(neuron).unwrap();
         

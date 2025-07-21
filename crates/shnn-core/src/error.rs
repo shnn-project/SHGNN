@@ -267,7 +267,7 @@ impl IntoSHNNError for std::io::Error {
 #[cfg(feature = "serde")]
 impl IntoSHNNError for serde_json::Error {
     fn into_shnn_error(self) -> SHNNError {
-        SHNNError::serialization_error("JSON serialization error")
+        SHNNError::serialization_error("JSON serialization error".to_string())
     }
 }
 

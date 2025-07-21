@@ -6,13 +6,13 @@
 
 use crate::{
     error::{Result, SHNNError, HypergraphErrorKind},
-    spike::{NeuronId, Spike, SpikeTarget},
+    spike::{NeuronId, Spike},
     time::Time,
 };
 use core::fmt;
 
 #[cfg(feature = "std")]
-use std::collections::{HashMap, HashSet, BTreeMap};
+use std::collections::{HashMap, HashSet};
 
 #[cfg(not(feature = "std"))]
 use heapless::{FnvIndexMap as HashMap, FnvIndexSet as HashSet};
@@ -73,7 +73,9 @@ pub enum WeightFunction {
     Individual(Vec<f32>),
     /// Distance-based weight function
     DistanceBased {
+        /// Base synaptic weight
         base_weight: f32,
+        /// Weight decay constant for STDP
         decay_constant: f32,
     },
     /// Custom weight computation (not serializable)

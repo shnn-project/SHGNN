@@ -5,9 +5,7 @@
 
 use crate::{
     error::{Result, SHNNError},
-    spike::{NeuronId, Spike},
     time::{Time, Duration},
-    hypergraph::HyperedgeId,
 };
 use core::fmt;
 
@@ -15,7 +13,7 @@ use core::fmt;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "math")]
-use crate::math::{exponential_decay, sigmoid};
+// Math functions will be imported when needed
 
 /// Trait defining synaptic plasticity rules
 pub trait PlasticityRule {

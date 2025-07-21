@@ -11,7 +11,6 @@ use crate::{
 use core::fmt;
 
 #[cfg(feature = "std")]
-use std::collections::VecDeque;
 
 #[cfg(not(feature = "std"))]
 use heapless::Vec as HeaplessVec;
@@ -20,7 +19,7 @@ use heapless::Vec as HeaplessVec;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "math")]
-use crate::math::{sigmoid, exponential_decay};
+// Math functions will be imported when needed
 
 /// Spike encoding strategy
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -108,11 +107,15 @@ pub trait SpikeEncoder {
             paired.sort_by_key(|(_, &time)| time);
             
             let sorted_times: Vec<_> = paired.iter().map(|(_, &time)| time).collect();
-            train.timestamps = sorted_times;
+            let sorted_amps = if let Some(ref amplitudes) = train.amplitudes {
+                Some(paired.iter().map(|(i, _)| amplitudes[*i]).collect())
+            } else {
+                None
+            };
             
-            if let Some(ref mut amplitudes) = train.amplitudes {
-                let sorted_amps: Vec<_> = paired.iter().map(|(i, _)| amplitudes[*i]).collect();
-                *amplitudes = sorted_amps;
+            train.timestamps = sorted_times;
+            if let Some(amps) = sorted_amps {
+                train.amplitudes = Some(amps);
             }
         }
         

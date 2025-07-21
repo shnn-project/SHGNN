@@ -305,6 +305,25 @@ impl SubAssign<Duration> for Duration {
 /// Discrete time step for simulation
 pub type TimeStep = u64;
 
+/// Helper methods for TimeStep (test convenience)
+#[cfg(test)]
+impl TimeStep {
+    /// Create TimeStep from milliseconds (for testing)
+    pub fn from_ms(ms: f64) -> Self {
+        (ms * 1000.0) as u64 // Convert to microseconds
+    }
+    
+    /// Create TimeStep from microseconds
+    pub fn from_micros(micros: f64) -> Self {
+        micros as u64
+    }
+    
+    /// Create TimeStep from seconds
+    pub fn from_secs(secs: f64) -> Self {
+        (secs * 1_000_000.0) as u64 // Convert to microseconds
+    }
+}
+
 /// Time window for temporal operations
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

@@ -76,6 +76,9 @@ pub mod math;
 #[cfg(feature = "serde")]
 pub mod serialization;
 
+#[cfg(test)]
+pub mod test_helpers;
+
 // Prelude module for common imports
 pub mod prelude {
     //! Common imports for SHNN users
@@ -112,7 +115,10 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const BUILD_INFO: BuildInfo = BuildInfo {
     version: VERSION,
     git_hash: option_env!("GIT_HASH"),
-    build_timestamp: option_env!("BUILD_TIMESTAMP").unwrap_or("unknown"),
+    build_timestamp: match option_env!("BUILD_TIMESTAMP") {
+        Some(ts) => ts,
+        None => "unknown",
+    },
     features: &[
         #[cfg(feature = "std")]
         "std",

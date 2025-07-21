@@ -4,7 +4,7 @@
 //! in neuromorphic computing, including activation functions, differential
 //! equations, and statistical operations.
 
-use core::f32::consts::{E, PI};
+use core::f32::consts::PI;
 
 #[cfg(feature = "std")]
 use std::f32;
@@ -462,6 +462,7 @@ pub fn sigmoid(x: f32) -> f32 {
     activation::sigmoid(x)
 }
 
+/// Calculate exponential decay function
 pub fn exponential_decay(x: f32, tau: f32) -> f32 {
     (-x / tau).exp()
 }
@@ -469,11 +470,13 @@ pub fn exponential_decay(x: f32, tau: f32) -> f32 {
 /// Re-export fast exponential approximation at module root
 pub use fast::exp_approx;
 
+/// Calculate Gaussian (normal) distribution value
 pub fn gaussian(x: f32, mu: f32, sigma: f32) -> f32 {
     let diff = x - mu;
     (-0.5 * (diff / sigma).powi(2)).exp() / (sigma * (2.0 * PI).sqrt())
 }
 
+/// Linear interpolation between two points
 pub fn linear_interpolate(x: f32, x0: f32, x1: f32, y0: f32, y1: f32) -> f32 {
     if x1 == x0 {
         return y0;
@@ -529,7 +532,7 @@ mod tests {
     
     #[test]
     fn test_fast_exp() {
-        let x = 1.0;
+        let x: f32 = 1.0;
         let exact = x.exp();
         let approx = fast::exp_approx(x);
         
@@ -564,9 +567,9 @@ mod tests {
     #[test]
     fn test_ode_solvers() {
         // Test exponential decay: dy/dt = -y/tau
-        let y0 = 1.0;
-        let tau = 1.0;
-        let dt = 0.1;
+        let y0: f32 = 1.0;
+        let tau: f32 = 1.0;
+        let dt: f32 = 0.1;
         
         let analytical = y0 * (-dt / tau).exp();
         let numerical = ode::exponential_euler(y0, tau, 0.0, dt);

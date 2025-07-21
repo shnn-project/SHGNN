@@ -35,6 +35,12 @@ impl NeuronId {
     pub const fn is_valid(&self) -> bool {
         self.0 != u32::MAX
     }
+    
+    /// Convert to usize for array indexing (test helper)
+    #[cfg(test)]
+    pub fn as_usize(&self) -> usize {
+        self.0 as usize
+    }
 }
 
 impl fmt::Display for NeuronId {
@@ -199,7 +205,9 @@ pub enum SpikeTarget {
     Multiple(Vec<NeuronId>),
     /// Broadcast to all neurons in a range
     Range {
+        /// Starting neuron ID of the connection
         start: NeuronId,
+        /// Ending neuron ID of the connection
         end: NeuronId,
     },
     /// Custom target selection function (not serializable)
@@ -495,7 +503,7 @@ mod tests {
     #[test]
     fn test_timed_spike() {
         let spike = Spike::binary(NeuronId::new(1), Time::from_millis(100)).unwrap();
-        let timed = TimedSpike::with_delay(spike, Time::from_millis(10));
+        let timed = TimedSpike::with_delay(spike, Duration::from_millis(10));
         
         assert_eq!(timed.delivery_time, Time::from_millis(110));
         assert!(!timed.is_ready(Time::from_millis(105)));
@@ -540,8 +548,8 @@ mod tests {
         let train = SpikeTrain::binary(NeuronId::new(1), timestamps).unwrap();
         let intervals = train.inter_spike_intervals();
         assert_eq!(intervals.len(), 2);
-        assert_eq!(intervals[0], Time::from_millis(100));
-        assert_eq!(intervals[1], Time::from_millis(100));
+        assert_eq!(intervals[0], Duration::from_millis(100));
+        assert_eq!(intervals[1], Duration::from_millis(100));
         
         // Perfectly regular -> CV should be 0
         assert_eq!(train.cv_isi(), 0.0);

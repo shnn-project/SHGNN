@@ -5,8 +5,7 @@
 //! Each model implements the `Neuron` trait for consistent behavior across the framework.
 
 use crate::spike::Spike;
-use crate::error::{SHNNError, Result};
-use crate::math::{exp_approx, safe_divide};
+use crate::math::exp_approx;
 use crate::time::TimeStep;
 
 #[cfg(not(feature = "std"))]
@@ -16,6 +15,7 @@ use libm::{exp, log};
 pub use crate::spike::NeuronId;
 
 // Type alias for backward compatibility with usize-based APIs
+/// Type alias for neuron IDs represented as usize for efficient indexing
 pub type NeuronIdUsize = usize;
 
 /// Enumeration of available neuron types
@@ -108,6 +108,13 @@ impl<T: Neuron> NeuronPool<T> {
         }
         spikes
     }
+    
+    /// Reset all neurons to their default state
+    pub fn reset_all(&mut self) {
+        for neuron in self.neurons.iter_mut() {
+            neuron.reset();
+        }
+    }
 }
 
 impl<T: Neuron> Default for NeuronPool<T> {
@@ -131,27 +138,34 @@ impl From<NeuronId> for usize {
 
 /// Current state of a neuron including membrane potential and internal variables
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct NeuronState {
+    /// Current membrane potential in millivolts
     pub membrane_potential: f64,
+    /// Remaining refractory period in timesteps
     pub refractory_timer: TimeStep,
+    /// Timestamp of the last spike generated
     pub last_spike_time: Option<TimeStep>,
 }
 
 impl NeuronState {
+    /// Create new default neuron state
     pub fn new() -> Self {
         Self {
             membrane_potential: -65.0, // Typical resting potential
-            refractory_timer: TimeStep::zero(),
+            refractory_timer: 0,
             last_spike_time: None,
         }
     }
     
+    /// Get current membrane potential
     pub fn membrane_potential(&self) -> f64 {
         self.membrane_potential
     }
     
+    /// Check if neuron is in refractory period
     pub fn is_refractory(&self) -> bool {
-        self.refractory_timer > TimeStep::zero()
+        self.refractory_timer > 0
     }
 }
 
@@ -198,16 +212,24 @@ pub struct LIFNeuron {
     state: NeuronState,
     
     // Parameters
-    pub tau_membrane: f64,      // Membrane time constant (ms)
-    pub resistance: f64,        // Membrane resistance (MΩ)
-    pub capacitance: f64,       // Membrane capacitance (nF)
-    pub threshold: f64,         // Spike threshold (mV)
-    pub reset_potential: f64,   // Reset potential (mV)
-    pub resting_potential: f64, // Resting potential (mV)
-    pub refractory_period: f64, // Refractory period (ms)
+    /// Membrane time constant in milliseconds
+    pub tau_membrane: f64,
+    /// Membrane resistance in MegaOhms
+    pub resistance: f64,
+    /// Membrane capacitance in nanoFarads
+    pub capacitance: f64,
+    /// Spike threshold in millivolts
+    pub threshold: f64,
+    /// Reset potential after spike in millivolts
+    pub reset_potential: f64,
+    /// Resting potential in millivolts
+    pub resting_potential: f64,
+    /// Refractory period in milliseconds
+    pub refractory_period: f64,
 }
 
 impl LIFNeuron {
+    /// Create new LIF neuron with default parameters
     pub fn new(id: NeuronId) -> Self {
         Self {
             id,
@@ -222,6 +244,7 @@ impl LIFNeuron {
         }
     }
     
+    /// Create LIF neuron with custom parameters
     pub fn with_params(
         id: NeuronId,
         tau_membrane: f64,
@@ -248,14 +271,11 @@ impl Neuron for LIFNeuron {
     fn integrate(&mut self, input_current: f64, dt: TimeStep) {
         if self.state.is_refractory() {
             // Update refractory timer
-            self.state.refractory_timer = self.state.refractory_timer - dt;
-            if self.state.refractory_timer < TimeStep::zero() {
-                self.state.refractory_timer = TimeStep::zero();
-            }
+            self.state.refractory_timer = self.state.refractory_timer.saturating_sub(dt);
             return;
         }
         
-        let dt_ms = dt.as_ms();
+        let dt_ms = dt as f64 / 1000.0; // Convert from TimeStep (u64) to milliseconds
         
         // Membrane equation: dV/dt = (V_rest - V)/tau + I*R/tau
         let leak_current = (self.resting_potential - self.state.membrane_potential) / self.tau_membrane;
@@ -265,11 +285,11 @@ impl Neuron for LIFNeuron {
         self.state.membrane_potential += dv_dt * dt_ms;
     }
     
-    fn update(&mut self, dt: TimeStep) -> Option<Spike> {
+    fn update(&mut self, _dt: TimeStep) -> Option<Spike> {
         if self.state.membrane_potential >= self.threshold {
             self.reset();
-            self.state.last_spike_time = Some(TimeStep::zero()); // Would need current time
-            self.state.refractory_timer = TimeStep::from_ms(self.refractory_period);
+            self.state.last_spike_time = Some(0); // Would need current time
+            self.state.refractory_timer = (self.refractory_period * 1000.0) as TimeStep;
             
             // Create spike with proper type conversion and error handling
             match Spike::new(
@@ -321,19 +341,30 @@ pub struct AdExNeuron {
     adaptation_current: f64,
     
     // Parameters
-    pub tau_membrane: f64,      // Membrane time constant (ms)
-    pub tau_adaptation: f64,    // Adaptation time constant (ms)
-    pub delta_t: f64,           // Slope factor (mV)
-    pub conductance: f64,       // Leak conductance (nS)
-    pub capacitance: f64,       // Membrane capacitance (pF)
-    pub threshold: f64,         // Spike threshold (mV)
-    pub reset_potential: f64,   // Reset potential (mV)
-    pub resting_potential: f64, // Resting potential (mV)
-    pub adaptation_increment: f64, // Spike-triggered adaptation increment (pA)
-    pub refractory_period: f64, // Refractory period (ms)
+    /// Membrane time constant in milliseconds
+    pub tau_membrane: f64,
+    /// Adaptation time constant in milliseconds
+    pub tau_adaptation: f64,
+    /// Slope factor in millivolts for exponential threshold
+    pub delta_t: f64,
+    /// Leak conductance in nanoSiemens
+    pub conductance: f64,
+    /// Membrane capacitance in picoFarads
+    pub capacitance: f64,
+    /// Spike threshold in millivolts
+    pub threshold: f64,
+    /// Reset potential in millivolts
+    pub reset_potential: f64,
+    /// Resting potential in millivolts
+    pub resting_potential: f64,
+    /// Spike-triggered adaptation increment in picoAmperes
+    pub adaptation_increment: f64,
+    /// Refractory period in milliseconds
+    pub refractory_period: f64,
 }
 
 impl AdExNeuron {
+    /// Create new AdEx neuron with default parameters
     pub fn new(id: NeuronId) -> Self {
         Self {
             id,
@@ -352,6 +383,7 @@ impl AdExNeuron {
         }
     }
     
+    /// Get current adaptation current value
     pub fn adaptation_current(&self) -> f64 {
         self.adaptation_current
     }
@@ -366,19 +398,16 @@ impl Default for AdExNeuron {
 impl Neuron for AdExNeuron {
     fn integrate(&mut self, input_current: f64, dt: TimeStep) {
         if self.state.is_refractory() {
-            self.state.refractory_timer = self.state.refractory_timer - dt;
-            if self.state.refractory_timer < TimeStep::zero() {
-                self.state.refractory_timer = TimeStep::zero();
-            }
+            self.state.refractory_timer = self.state.refractory_timer.saturating_sub(dt);
             return;
         }
         
-        let dt_ms = dt.as_ms();
+        let dt_ms = dt as f64 / 1000.0; // Convert from TimeStep (u64) to milliseconds
         let v = self.state.membrane_potential;
         
         // Exponential term for spike generation
         let exp_term = if v - self.threshold < 10.0 { // Avoid overflow
-            self.delta_t * exp_approx((v - self.threshold) / self.delta_t)
+            self.delta_t * exp_approx(((v - self.threshold) / self.delta_t) as f32) as f64
         } else {
             self.delta_t * 1000.0 // Large value to trigger spike
         };
@@ -398,11 +427,11 @@ impl Neuron for AdExNeuron {
         self.adaptation_current += da_dt * dt_ms;
     }
     
-    fn update(&mut self, dt: TimeStep) -> Option<Spike> {
+    fn update(&mut self, _dt: TimeStep) -> Option<Spike> {
         if self.state.membrane_potential >= self.threshold + 10.0 { // Spike condition
             self.reset();
             self.adaptation_current += self.adaptation_increment;
-            self.state.refractory_timer = TimeStep::from_ms(self.refractory_period);
+            self.state.refractory_timer = (self.refractory_period * 1000.0) as TimeStep;
             
             // Create spike with proper type conversion and error handling
             match Spike::new(
@@ -454,13 +483,18 @@ pub struct IzhikevichNeuron {
     recovery_variable: f64,
     
     // Parameters
-    pub a: f64, // Recovery time constant
-    pub b: f64, // Recovery sensitivity  
-    pub c: f64, // Reset potential
-    pub d: f64, // Recovery increment
+    /// Recovery time constant in 1/ms
+    pub a: f64,
+    /// Recovery sensitivity in pA/mV
+    pub b: f64,
+    /// Reset potential in millivolts
+    pub c: f64,
+    /// Recovery increment in picoAmperes
+    pub d: f64,
 }
 
 impl IzhikevichNeuron {
+    /// Create new Izhikevich neuron with specified parameters
     pub fn new(a: f64, b: f64, c: f64, d: f64) -> Self {
         Self {
             id: NeuronId(0),
@@ -501,6 +535,7 @@ impl IzhikevichNeuron {
         neuron
     }
     
+    /// Get current recovery variable value
     pub fn recovery_variable(&self) -> f64 {
         self.recovery_variable
     }
@@ -514,7 +549,7 @@ impl Default for IzhikevichNeuron {
 
 impl Neuron for IzhikevichNeuron {
     fn integrate(&mut self, input_current: f64, dt: TimeStep) {
-        let dt_ms = dt.as_ms();
+        let dt_ms = dt as f64 / 1000.0; // Convert from TimeStep (u64) to milliseconds
         let v = self.state.membrane_potential;
         let u = self.recovery_variable;
         
