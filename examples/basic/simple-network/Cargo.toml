@@ -1,0 +1,21 @@
+[package]
+name = "simple-network"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team <team@shnn-project.org>"]
+description = "Basic SHNN example demonstrating a simple spiking neural network"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[dependencies]
+shnn-core = { path = "../../../crates/shnn-core" }
+anyhow = "1.0"
+rand = "0.8"
+plotters = { version = "0.3", optional = true }
+clap = { version = "4.4", features = ["derive"] }
+
+[features]
+default = []
+visualization = ["dep:plotters"]

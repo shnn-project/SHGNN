@@ -1,0 +1,255 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        release_name: SHNN ${{ steps.get_version.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          ## Changes in ${{ steps.get_version.outputs.version }}
+          
+          See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+          
+          ### Installation
+          
+          ```bash
+          cargo add shnn-core
+          ```
+          
+          ### Python Package
+          
+          ```bash
+          pip install shnn
+          ```
+
+  build-and-publish:
+    name: Build and Publish
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+
+    - name: Build release binaries
+      run: cargo build --release --target ${{ matrix.target }} --all-features
+
+    - name: Create archive
+      shell: bash
+      run: |
+        staging="shnn-${{ needs.create-release.outputs.version }}-${{ matrix.target }}"
+        mkdir -p "$staging"/{docs,examples}
+        
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          cp target/${{ matrix.target }}/release/*.exe "$staging/"
+        else
+          cp target/${{ matrix.target }}/release/shnn-* "$staging/" 2>/dev/null || true
+        fi
+        
+        cp -r docs/* "$staging/docs/" 2>/dev/null || true
+        cp -r examples/* "$staging/examples/" 2>/dev/null || true
+        cp README.md LICENSE-MIT LICENSE-APACHE "$staging/"
+        
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          7z a "$staging.zip" "$staging"
+          echo "ASSET=$staging.zip" >> $GITHUB_ENV
+        else
+          tar czf "$staging.tar.gz" "$staging"
+          echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+        fi
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ${{ env.ASSET }}
+        asset_name: ${{ env.ASSET }}
+        asset_content_type: application/octet-stream
+
+  publish-crates:
+    name: Publish to crates.io
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Publish shnn-core
+      run: cargo publish --package shnn-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    - name: Wait before publishing dependent crates
+      run: sleep 30
+
+    - name: Publish shnn-async
+      run: cargo publish --package shnn-async --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    - name: Publish shnn-embedded
+      run: cargo publish --package shnn-embedded --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    - name: Wait before publishing remaining crates
+      run: sleep 30
+
+    - name: Publish shnn-wasm
+      run: cargo publish --package shnn-wasm --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    - name: Publish shnn-ffi
+      run: cargo publish --package shnn-ffi --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    - name: Publish shnn-bench
+      run: cargo publish --package shnn-bench --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish-python:
+    name: Publish Python Package
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install maturin
+      run: pip install maturin[patchelf]
+
+    - name: Build wheels
+      run: maturin build --release --manifest-path crates/shnn-python/Cargo.toml
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: target/wheels
+
+  upload-python:
+    name: Upload to PyPI
+    needs: [create-release, publish-python]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: wheels
+        path: wheels
+
+    - name: Publish to PyPI
+      uses: PyO3/maturin-action@v1
+      with:
+        command: upload
+        args: --skip-existing wheels/*
+      env:
+        MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-wasm:
+    name: Publish WASM Package
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+
+    - name: Install wasm-pack
+      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+    - name: Build WASM package
+      run: wasm-pack build crates/shnn-wasm --target web --out-dir ../../pkg
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Publish to npm
+      run: |
+        cd pkg
+        npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-docs:
+    name: Deploy Documentation
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Build documentation
+      run: cargo doc --all-features --no-deps
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./target/doc
+        cname: shnn.dev

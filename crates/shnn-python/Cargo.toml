@@ -1,0 +1,242 @@
+[package]
+name = "shnn-python"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team"]
+description = "Python bindings for the Spiking Hypergraph Neural Network (SHNN) library"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-project/shnn"
+homepage = "https://shnn-project.github.io"
+documentation = "https://docs.rs/shnn-python"
+readme = "README.md"
+keywords = ["neural-networks", "neuromorphic", "python", "bindings", "spiking"]
+categories = ["science", "api-bindings"]
+
+[lib]
+name = "shnn_python"
+crate-type = ["cdylib"]
+
+[features]
+default = ["extension-module"]
+
+# Core features
+extension-module = ["pyo3/extension-module"]
+auto-initialize = ["pyo3/auto-initialize"]
+multiple-pymethods = ["pyo3/multiple-pymethods"]
+
+# Hardware acceleration features (forwarded from shnn-ffi)
+cuda = ["shnn-ffi/cuda"]
+opencl = ["shnn-ffi/opencl"]
+fpga = ["shnn-ffi/fpga"]
+rram = ["shnn-ffi/rram"]
+intel-loihi = ["shnn-ffi/intel-loihi"]
+spinnaker = ["shnn-ffi/spiNNaker"]
+
+# Advanced features
+async-support = ["pyo3-asyncio", "tokio"]
+numpy-support = ["numpy"]
+pandas-support = ["polars"]
+plotting = ["plotters"]
+# jupyter = ["evcxr", "evcxr_jupyter"]  # Disabled due to dependency conflicts
+
+# Development features
+abi3 = ["pyo3/abi3"]
+generate-import-lib = ["pyo3/generate-import-lib"]
+
+[dependencies]
+# Core dependencies
+shnn-core = { path = "../shnn-core", version = "0.1.0" }
+shnn-ffi = { path = "../shnn-ffi", version = "0.1.0" }
+shnn-async = { path = "../shnn-async", version = "0.1.0", optional = true }
+
+# Python integration
+pyo3 = { version = "0.20", features = ["chrono"] }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"], optional = true }
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"], optional = true }
+
+# Data handling
+numpy = { version = "0.20", optional = true }
+polars = { version = "0.35", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Visualization
+plotters = { version = "0.3", optional = true }
+
+# Jupyter support
+# evcxr = { version = "0.14", optional = true }  # Causing version conflicts
+# evcxr_jupyter = { version = "0.14", optional = true }  # Causing version conflicts
+
+# Utility crates
+thiserror = "1.0"
+log = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+
+[dev-dependencies]
+# pytest is a Python testing framework, not a Rust crate
+tempfile = "3.8"
+
+[build-dependencies]
+pyo3-build-config = "0.20"
+
+# Python packaging configuration
+[tool.maturin]
+python-source = "python"
+module-name = "shnn_python._shnn_python"
+bindings = "pyo3"
+compatibility = "linux"
+
+[tool.maturin.target.x86_64-unknown-linux-gnu]
+strip = true
+
+[tool.maturin.target.x86_64-pc-windows-msvc]
+strip = true
+
+[tool.maturin.target.x86_64-apple-darwin]
+strip = true
+
+[tool.maturin.target.aarch64-apple-darwin]
+strip = true
+
+# PyO3 configuration
+[tool.pyo3-stubgen]
+module = "shnn_python"
+
+# Python project metadata
+[project]
+name = "shnn-python"
+version = "0.1.0"
+description = "Python bindings for Spiking Hypergraph Neural Networks"
+authors = ["SHNN Team <team@shnn-project.org>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+homepage = "https://shnn-project.github.io"
+repository = "https://github.com/shnn-project/shnn"
+documentation = "https://shnn-python.readthedocs.io"
+keywords = ["neural-networks", "neuromorphic", "spiking", "machine-learning"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy >= 1.21.0",
+    "typing-extensions >= 4.0.0",
+]
+
+[project.optional-dependencies]
+# Core optional dependencies
+async = ["asyncio"]
+visualization = ["matplotlib >= 3.5.0", "seaborn >= 0.11.0"]
+data = ["pandas >= 1.3.0", "polars >= 0.15.0"]
+notebooks = ["jupyter >= 1.0.0", "ipywidgets >= 7.6.0"]
+benchmarks = ["pytest-benchmark >= 4.0.0", "memory-profiler >= 0.60.0"]
+
+# Hardware acceleration
+cuda = ["cupy >= 10.0.0"]
+opencl = ["pyopencl >= 2021.2.0"]
+
+# Development dependencies
+dev = [
+    "pytest >= 7.0.0",
+    "pytest-asyncio >= 0.21.0",
+    "pytest-benchmark >= 4.0.0",
+    "black >= 22.0.0",
+    "isort >= 5.10.0",
+    "mypy >= 0.991",
+    "flake8 >= 5.0.0",
+    "sphinx >= 5.0.0",
+    "sphinx-rtd-theme >= 1.0.0",
+]
+
+# Full installation with all features
+all = [
+    "shnn-python[async,visualization,data,notebooks,benchmarks,cuda,opencl]"
+]
+
+[project.urls]
+Homepage = "https://shnn-project.github.io"
+Documentation = "https://shnn-python.readthedocs.io"
+Repository = "https://github.com/shnn-project/shnn"
+"Bug Tracker" = "https://github.com/shnn-project/shnn/issues"
+Changelog = "https://github.com/shnn-project/shnn/blob/main/CHANGELOG.md"
+
+[project.scripts]
+shnn = "shnn_python.cli:main"
+
+# Wheel configuration
+[tool.cibuildwheel]
+build = ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+skip = ["*-win32", "*-manylinux_i686"]
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y openssl-devel"
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.12" }
+
+[tool.cibuildwheel.windows]
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
+
+# Testing configuration
+[tool.pytest.ini_options]
+testpaths = ["tests", "python/tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gpu: marks tests as requiring GPU hardware",
+    "integration: marks tests as integration tests",
+    "benchmark: marks tests as benchmarks",
+]
+
+# Type checking configuration
+[tool.mypy]
+files = ["python/shnn_python", "tests"]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+# Code formatting
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88

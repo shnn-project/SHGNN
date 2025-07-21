@@ -1,0 +1,86 @@
+[package]
+name = "shnn-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Core neuromorphic primitives for Spiking Hypergraph Neural Networks"
+
+[dependencies]
+# Core async runtime
+tokio = { workspace = true, optional = true }
+futures = { workspace = true, optional = true }
+async-trait = { workspace = true, optional = true }
+
+# Concurrency and threading
+crossbeam = { workspace = true }
+parking_lot = { workspace = true }
+
+# Data structures
+smallvec = { workspace = true }
+heapless = { workspace = true, optional = true }
+
+# Serialization
+serde = { workspace = true, optional = true }
+bincode = { workspace = true, optional = true }
+
+# Math and numerics
+nalgebra = { workspace = true, optional = true }
+ndarray = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
+libm = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true, optional = true }
+
+# Logging
+log = { workspace = true }
+env_logger = { version = "0.10", optional = true }
+
+# JSON handling for error serialization
+serde_json = { version = "1.0", optional = true }
+
+[features]
+default = ["std", "async", "math", "serde"]
+
+# Platform features
+std = ["tokio", "futures", "async-trait", "nalgebra", "ndarray", "rand", "anyhow", "serde", "bincode", "env_logger", "serde_json"]
+no-std = ["heapless"]
+
+# Functional features
+async = ["tokio", "futures", "async-trait"]
+math = ["nalgebra", "ndarray", "rand"]
+serde = ["dep:serde", "bincode", "smallvec/serde", "serde_json"]
+
+# Development features
+logging = ["env_logger"]
+json-errors = ["serde_json"]
+
+# Performance features
+simd = []
+parallel = ["std"]
+hardware-accel = []
+
+[dev-dependencies]
+tokio-test = "0.4"
+proptest = { workspace = true }
+criterion = { workspace = true }
+
+# Benchmarks will be added when benchmark files are created
+# [[bench]]
+# name = "neuron_processing"
+# harness = false
+#
+# [[bench]]
+# name = "spike_routing"
+# harness = false
+#
+# [[bench]]
+# name = "hypergraph_operations"
+# harness = false

@@ -1,0 +1,119 @@
+[package]
+name = "shnn-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team"]
+description = "WebAssembly bindings for Spiking Hypergraph Neural Networks"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-project/shnn"
+homepage = "https://shnn-project.github.io"
+documentation = "https://docs.rs/shnn-wasm"
+keywords = ["neuromorphic", "spiking", "neural-networks", "wasm", "hypergraph"]
+categories = ["science", "simulation", "wasm", "web-programming"]
+readme = "README.md"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Core SHNN functionality
+shnn-core = { version = "0.1.0", path = "../shnn-core", default-features = false }
+
+# WASM-specific dependencies
+wasm-bindgen = "0.2.89"
+wasm-bindgen-futures = "0.4.39"
+js-sys = "0.3.66"
+
+# Web APIs
+web-sys = { version = "0.3.66", features = [
+  "console",
+  "Window",
+  "Document",
+  "Element",
+  "HtmlElement",
+  "HtmlCanvasElement",
+  "CanvasRenderingContext2d",
+  "ImageData",
+  "Performance",
+  "Worker",
+  "MessageEvent",
+  "MessagePort",
+  "Blob",
+  "Url",
+  "Request",
+  "RequestInit",
+  "RequestMode",
+  "Response",
+  "Headers",
+  "WebGlRenderingContext",
+  "WebGl2RenderingContext",
+  "AudioContext",
+  "GainNode",
+  "OscillatorNode",
+  "AnalyserNode",
+]}
+
+# Serialization
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
+serde-wasm-bindgen = "0.6.3"
+
+# Utilities
+getrandom = { version = "0.2.11", features = ["js"] }
+
+# Error handling
+thiserror = "1.0.50"
+
+# Optional features
+console_error_panic_hook = { version = "0.1.7", optional = true }
+wee_alloc = { version = "0.4.5", optional = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.39"
+
+[features]
+default = ["console_error_panic_hook"]
+
+# Memory optimization
+wee_alloc = ["dep:wee_alloc"]
+
+# Debug utilities
+console_error_panic_hook = ["dep:console_error_panic_hook"]
+
+# Enhanced features
+audio = []
+webgl = []
+workers = []
+streaming = []
+
+# All WASM features
+full = [
+    "audio",
+    "webgl", 
+    "workers",
+    "streaming",
+    "wee_alloc",
+    "console_error_panic_hook"
+]
+
+[package.metadata.wasm-pack.profile.release]
+# Optimize for size and performance
+wasm-opt = ["-Oz", "--enable-mutable-globals"]
+
+[package.metadata.wasm-pack.profile.dev]
+# Enable debugging features in development
+wasm-opt = false
+
+[[example]]
+name = "basic_network"
+path = "examples/basic_network.rs"
+
+[[example]]
+name = "real_time_visualization"
+path = "examples/real_time_visualization.rs"
+required-features = ["audio", "webgl"]
+
+[[example]]
+name = "web_worker_processing"
+path = "examples/web_worker_processing.rs"
+required-features = ["workers"]

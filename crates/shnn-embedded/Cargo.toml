@@ -1,0 +1,111 @@
+[package]
+name = "shnn-embedded"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team"]
+description = "Embedded/no-std implementation of Spiking Hypergraph Neural Networks"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-project/shnn"
+homepage = "https://shnn-project.github.io"
+documentation = "https://docs.rs/shnn-embedded"
+keywords = ["neuromorphic", "spiking", "neural-networks", "embedded", "no-std"]
+categories = ["science", "simulation", "embedded", "no-std"]
+readme = "README.md"
+
+[dependencies]
+# Core SHNN functionality (no-std compatible)
+shnn-core = { version = "0.1.0", path = "../shnn-core", default-features = false }
+
+# No-std collections and utilities
+heapless = "0.8.0"
+nb = "1.1.0"
+embedded-hal = "1.0.0"
+
+# Fixed-point arithmetic for deterministic computation
+fixed = { version = "1.24.0", optional = true }
+cordic = { version = "0.1.5", optional = true }
+
+# Lightweight serialization
+postcard = { version = "1.0.8", features = ["use-std"], optional = true }
+
+# Error handling
+embedded-error-chain = "0.1.0"
+
+# Optional real-time operating system support
+rtic = { version = "2.1.1", optional = true }
+cortex-m = { version = "0.7.7", optional = true }
+cortex-m-rt = { version = "0.7.3", optional = true }
+
+# Memory management for embedded
+linked_list_allocator = { version = "0.10.5", optional = true }
+
+# Lightweight random number generation
+rand_chacha = { version = "0.3.1", default-features = false }
+rand_core = { version = "0.6.4", default-features = false }
+
+[dev-dependencies]
+# Testing on embedded platforms
+# embedded-test = "0.1.0"  # Yanked, will be replaced with appropriate testing framework
+
+[features]
+default = []
+
+# Hardware abstraction layers
+cortex-m = ["dep:cortex-m", "dep:cortex-m-rt"]
+rtic = ["dep:rtic", "cortex-m"]
+
+# Memory management
+alloc = ["dep:linked_list_allocator"]
+
+# Serialization support
+serde = ["dep:postcard", "shnn-core/serde"]
+
+# Math optimizations
+fixed-point = ["dep:fixed", "dep:cordic"]
+
+# Hardware-specific optimizations
+arm-math = []
+risc-v = []
+
+# Real-time features
+real-time = ["rtic"]
+
+# All embedded features
+full = [
+    "cortex-m",
+    "rtic", 
+    "alloc",
+    "serde",
+    "fixed-point",
+    "arm-math",
+    "real-time"
+]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+# Examples will be added when files are created
+# [[example]]
+# name = "cortex_m_basic"
+# required-features = ["cortex-m"]
+#
+# [[example]]
+# name = "rtic_real_time"
+# required-features = ["rtic", "real-time"]
+#
+# [[example]]
+# name = "fixed_point_processing"
+# required-features = ["fixed-point"]
+
+[profile.release]
+# Optimize for size and determinism
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+# Debug optimizations for embedded development
+opt-level = 1
+debug = true

@@ -1,0 +1,130 @@
+[package]
+name = "shnn-ffi"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team"]
+description = "Foreign Function Interface (FFI) bindings for SHNN hardware acceleration"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-project/shnn"
+homepage = "https://shnn-project.github.io"
+documentation = "https://docs.rs/shnn-ffi"
+readme = "README.md"
+keywords = ["neural-networks", "neuromorphic", "hardware", "acceleration", "ffi"]
+categories = ["science", "hardware-support", "external-ffi-bindings"]
+
+[lib]
+name = "shnn_ffi"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[features]
+default = ["std"]
+
+# Core features
+std = ["shnn-core/std"]
+unsafe-optimizations = []
+
+# Hardware acceleration backends
+cuda = ["cudarc"]
+opencl = ["opencl3"]
+fpga = []  # FPGA support without external dependency
+rram = []
+memristor = []
+intel-loihi = []
+spiNNaker = []
+
+# Advanced features
+parallel = ["rayon"]
+gpu-compute = ["wgpu", "pollster"]
+distributed = ["tokio", "serde", "bincode"]
+profiling = ["tracing", "tracing-subscriber"]
+
+# Development features
+python-bindings = ["pyo3"]
+c-bindings = ["libc"]
+cpp-bindings = ["cxx"]
+
+[dependencies]
+# Core dependencies
+shnn-core = { path = "../shnn-core", version = "0.1.0" }
+shnn-embedded = { path = "../shnn-embedded", version = "0.1.0", default-features = false }
+
+# FFI and serialization
+libc = { version = "0.2", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+bincode = { version = "1.3", optional = true }
+
+# Hardware acceleration
+cudarc = { version = "0.9", optional = true }
+opencl3 = { version = "0.7", optional = true }
+# fpga-rs = { version = "0.1", optional = true }  # Not available on crates.io
+wgpu = { version = "0.19", optional = true }
+pollster = { version = "0.3", optional = true }
+
+# Parallel processing
+rayon = { version = "1.7", optional = true }
+tokio = { version = "1.0", features = ["full"], optional = true }
+
+# Profiling and logging
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", optional = true }
+
+# Language bindings
+pyo3 = { version = "0.20", features = ["extension-module"], optional = true }
+cxx = { version = "1.0", optional = true }
+
+# Utility crates
+thiserror = "1.0"
+once_cell = "1.19"
+parking_lot = "0.12"
+crossbeam = "0.8"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.0"
+tempfile = "3.8"
+env_logger = "0.10"
+
+[build-dependencies]
+cc = "1.0"
+bindgen = "0.69"
+cxx-build = { version = "1.0", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+# Benchmarks and examples will be added when files are created
+# [[bench]]
+# name = "hardware_acceleration"
+# harness = false
+# required-features = ["std"]
+#
+# [[example]]
+# name = "cuda_acceleration"
+# required-features = ["cuda"]
+#
+# [[example]]
+# name = "fpga_deployment"
+# required-features = ["fpga"]
+#
+# [[example]]
+# name = "c_bindings"
+# required-features = ["c-bindings"]
+#
+# [[example]]
+# name = "python_extension"
+# required-features = ["python-bindings"]
+
+# Platform-specific optimizations
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+# Platform-specific dependencies for x86_64 would go here
+
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+# Platform-specific dependencies for aarch64 would go here
+
+# Hardware-specific configurations
+[package.metadata.hardware]
+cuda_compute_capability = "7.5"
+opencl_version = "2.0"
+fpga_family = "xilinx-zynq"
+rram_technology = "hafnium-oxide"
