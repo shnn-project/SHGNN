@@ -1,0 +1,22 @@
+[package]
+name = "shnn-serialize"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team <team@shnn.ai>"]
+description = "Zero-dependency, zero-copy serialization optimized for neuromorphic data"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-ai/shnn"
+keywords = ["serialization", "zero-copy", "neuromorphic", "zero-dependency", "binary"]
+categories = ["encoding", "data-structures", "no-std"]
+
+[features]
+default = ["std"]
+std = []
+no-std = []
+
+[dependencies]
+# Zero external dependencies for maximum compile speed
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

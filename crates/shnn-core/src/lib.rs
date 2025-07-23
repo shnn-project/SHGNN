@@ -34,12 +34,15 @@
 //!
 //! - `std` (default): Enable standard library support
 //! - `no-std`: Enable no-std embedded support
+//! - `zero-deps` (default): Use custom zero-dependency implementations
+//! - `legacy-deps`: Use external dependencies (tokio, nalgebra, serde, etc.)
 //! - `async`: Enable asynchronous processing capabilities
 //! - `math`: Enable advanced mathematical operations
-//! - `serde`: Enable serialization support
+//! - `serialize`: Enable zero-copy serialization support
 //! - `simd`: Enable SIMD optimizations
 //! - `parallel`: Enable parallel processing
 //! - `hardware-accel`: Enable hardware acceleration support
+//! - `optimized`: Enable all performance optimizations
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
@@ -66,6 +69,19 @@ pub mod time;
 pub mod memory;
 pub mod error;
 
+// Re-export our custom zero-dependency crates
+#[cfg(feature = "async")]
+pub use shnn_async_runtime as async_runtime;
+
+#[cfg(feature = "math")]
+pub use shnn_math as math_ops;
+
+#[cfg(feature = "parallel")]
+pub use shnn_lockfree as lockfree;
+
+#[cfg(feature = "serialize")]
+pub use shnn_serialize as serialize;
+
 // Conditional modules based on features
 #[cfg(feature = "async")]
 pub mod async_processing;
@@ -73,7 +89,7 @@ pub mod async_processing;
 #[cfg(feature = "math")]
 pub mod math;
 
-#[cfg(feature = "serde")]
+#[cfg(any(feature = "serialize", feature = "legacy-serde"))]
 pub mod serialization;
 
 #[cfg(test)]
@@ -98,6 +114,19 @@ pub mod prelude {
     
     #[cfg(feature = "math")]
     pub use crate::math::*;
+    
+    // Re-export custom implementations for convenience
+    #[cfg(feature = "async")]
+    pub use shnn_async_runtime::{runtime::Runtime, Task, Executor};
+    
+    #[cfg(feature = "math")]
+    pub use shnn_math::{Vector, Matrix, SparseMatrix};
+    
+    #[cfg(feature = "parallel")]
+    pub use shnn_lockfree::{Queue, Stack, AtomicCounter};
+    
+    #[cfg(feature = "serialize")]
+    pub use shnn_serialize::{Serialize, Deserialize, BinaryEncoder, BinaryDecoder};
 }
 
 // Platform-specific imports
@@ -176,6 +205,7 @@ pub fn init() -> Result<()> {
         if std::env::var("RUST_LOG").is_err() {
             std::env::set_var("RUST_LOG", "info");
         }
+        #[cfg(feature = "logging")]
         env_logger::try_init().ok();
         
         log::info!("{}", BUILD_INFO.build_string());
@@ -193,6 +223,7 @@ pub fn init_with_config(config: InitConfig) -> Result<()> {
         }
         
         if config.enable_logging {
+            #[cfg(feature = "logging")]
             env_logger::try_init().ok();
         }
         

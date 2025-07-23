@@ -1,7 +1,8 @@
 //! Serialization utilities for SHNN data structures
 //!
 //! This module provides efficient serialization and deserialization
-//! for neural network states, spike trains, and hypergraph structures.
+//! for neural network states, spike trains, and hypergraph structures
+//! using our custom zero-dependency serialization library.
 
 use crate::{
     error::{Result, SHNNError},
@@ -10,7 +11,16 @@ use crate::{
     neuron::NeuronState,
 };
 
-#[cfg(feature = "serde")]
+// Use our custom zero-dependency serialization
+#[cfg(feature = "serialize")]
+use shnn_serialize::{
+    Serialize, Deserialize, BinaryEncoder, BinaryDecoder,
+    Buffer, BufferMut, ZeroCopyBuffer,
+    neural::{SpikeEvent, WeightMatrix, LayerState, NeuralSerializer},
+};
+
+// Legacy compatibility for serde
+#[cfg(feature = "legacy-serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "std")]
@@ -66,13 +76,13 @@ impl NetworkSnapshot {
     /// Validate snapshot integrity
     pub fn validate(&self) -> Result<()> {
         if self.version == 0 {
-            return Err(SHNNError::serialization_error("Invalid version".to_string()));
+            return Err(SHNNError::generic("Invalid version"));
         }
         
         // Validate spike trains
         for train in &self.spike_trains {
             if !train.source.is_valid() {
-                return Err(SHNNError::serialization_error("Invalid spike train source".to_string()));
+                return Err(SHNNError::generic("Invalid spike train source"));
             }
         }
         

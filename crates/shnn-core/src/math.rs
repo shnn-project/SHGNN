@@ -2,12 +2,31 @@
 //!
 //! This module provides optimized mathematical functions commonly used
 //! in neuromorphic computing, including activation functions, differential
-//! equations, and statistical operations.
+//! equations, and statistical operations using our custom zero-dependency
+//! math library.
 
 use core::f32::consts::PI;
 
 #[cfg(feature = "std")]
 use std::f32;
+
+// Use our custom math library instead of nalgebra/ndarray
+#[cfg(feature = "math")]
+pub use shnn_math::{
+    Vector, Matrix, SparseMatrix,
+    activation::{tanh, relu, leaky_relu, elu, swish},
+    math::{FloatMath, exp_approx, ln_approx, sqrt_approx, sin_approx, cos_approx},
+    vector::{VectorOps, dot_product, cosine_similarity, euclidean_distance},
+    matrix::{MatrixOps, matrix_multiply, transpose, inverse_2x2, determinant},
+    sparse::{CSRMatrix, sparse_multiply, sparse_add},
+    stats::{mean, variance, standard_deviation, correlation, normalize},
+};
+
+// Legacy compatibility for external math libraries
+#[cfg(feature = "legacy-math")]
+use nalgebra as na;
+#[cfg(feature = "legacy-math")]
+use ndarray as nd;
 
 #[cfg(feature = "simd")]
 use core::arch::x86_64::*;
@@ -468,7 +487,7 @@ pub fn exponential_decay(x: f32, tau: f32) -> f32 {
 }
 
 /// Re-export fast exponential approximation at module root
-pub use fast::exp_approx;
+// Remove duplicate exp_approx export - it causes conflict
 
 /// Calculate Gaussian (normal) distribution value
 pub fn gaussian(x: f32, mu: f32, sigma: f32) -> f32 {

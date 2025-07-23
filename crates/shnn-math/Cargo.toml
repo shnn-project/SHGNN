@@ -1,0 +1,32 @@
+[package]
+name = "shnn-math"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Team <team@shnn.ai>"]
+description = "Zero-dependency math library optimized for neuromorphic computations"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/shnn-ai/shnn"
+keywords = ["neural", "math", "simd", "neuromorphic", "zero-dependency"]
+categories = ["mathematics", "science", "no-std"]
+
+[features]
+default = ["std"]
+std = []
+simd = []  # Requires nightly Rust - disabled by default for stable compilation
+no-std = []
+
+[dependencies]
+# Zero external dependencies for maximum compile speed
+
+# Examples will be added later
+# [[example]]
+# name = "matrix_operations"
+# required-features = ["std"]
+
+# [[example]]
+# name = "neural_activations"
+# required-features = ["std"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

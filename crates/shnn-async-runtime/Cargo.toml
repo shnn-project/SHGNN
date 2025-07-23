@@ -1,0 +1,35 @@
+[package]
+name = "shnn-async-runtime"
+version = "0.1.0"
+edition = "2021"
+authors = ["SHNN Development Team <team@shgnn.org>"]
+license = "MIT OR Apache-2.0"
+description = "Zero-dependency async runtime optimized for Spiking Hypergraph Neural Networks"
+keywords = ["neuromorphic", "async", "runtime", "zero-dependency", "embedded"]
+categories = ["asynchronous", "concurrency", "embedded", "no-std"]
+
+[dependencies]
+# Minimal dependencies for no_std compatibility
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }
+
+[features]
+default = ["std"]
+std = []
+no-std = []
+
+# SIMD optimizations
+simd = []
+avx2 = ["simd"]
+neon = ["simd"]
+
+# Real-time features
+real-time = []
+deterministic = ["real-time"]
+
+[dev-dependencies]
+# Only for testing - not included in library
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

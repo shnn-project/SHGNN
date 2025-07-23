@@ -1,7 +1,8 @@
 //! Asynchronous spike processing and event-driven computation
 //!
 //! This module provides async/await based spike processing capabilities
-//! for high-performance neuromorphic computation.
+//! for high-performance neuromorphic computation using our custom zero-dependency
+//! async runtime.
 
 use crate::{
     error::{Result, SHNNError},
@@ -17,6 +18,17 @@ use std::{
     collections::VecDeque,
 };
 
+// Use our custom async runtime instead of tokio
+#[cfg(feature = "async")]
+use shnn_async_runtime::{
+    runtime::Runtime,
+    task::{Task, TaskHandle},
+    executor::Executor,
+    timer::Timer,
+    waker::CustomWaker,
+    sync::{Channel, Receiver, Sender},
+};
+
 use core::{
     future::Future,
     pin::Pin,
@@ -24,7 +36,10 @@ use core::{
     fmt,
 };
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialize")]
+use shnn_serialize::{Serialize, Deserialize};
+
+#[cfg(feature = "legacy-serde")]
 use serde::{Deserialize, Serialize};
 
 /// Async spike processor trait

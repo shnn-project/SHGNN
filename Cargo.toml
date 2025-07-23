@@ -2,7 +2,11 @@
 resolver = "2"
 members = [
     "crates/shnn-core",
-    "crates/shnn-async", 
+    "crates/shnn-async",
+    "crates/shnn-async-runtime",
+    "crates/shnn-math",
+    "crates/shnn-lockfree",
+    "crates/shnn-serialize",
     "crates/shnn-wasm",
     "crates/shnn-embedded",
     "crates/shnn-ffi",
