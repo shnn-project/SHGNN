@@ -3,7 +3,7 @@
 
 > ⚠️ **PROJECT UNDER CONSTRUCTION** ⚠️
 >
-> **Hypergraph Modularization in Progress**: We are currently refactoring this project to separate hypergraph-specific functionality from generic spiking neural network primitives. This will enable users to employ any data structure (traditional graphs, matrices, sparse matrices, etc.) for neural connectivity while preserving all neuromorphic capabilities.
+> **Hypergraph Modularization in Progress**: Refactoring this project to separate hypergraph-specific functionality from generic spiking neural network primitives. This will enable the imaginary users that live in the alternate universe where I actually finish shit to employ any data structure (traditional graphs, matrices, sparse matrices, etc.) for neural connectivity while preserving all neuromorphic capabilities.
 >
 > **Current Status**:
 > - ✅ Core neuromorphic primitives (neurons, spikes, plasticity, encoding) are already data-structure agnostic
