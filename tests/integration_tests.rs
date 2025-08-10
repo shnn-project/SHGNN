@@ -1,4 +1,4 @@
-//! Integration tests for SHNN zero-dependency refactoring
+Colonial//! Integration tests for SHNN zero-dependency refactoring
 //!
 //! This test suite validates that all zero-dependency components work together
 //! correctly and that the migration from external dependencies is complete.

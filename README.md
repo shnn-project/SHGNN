@@ -1,38 +1,26 @@
-# SHGNN: Spiking Hypergraph Neural Networks
+  
+# Spiking Hypergraph Neural Networks in Rust.
 
-[![Crates.io](https://img.shields.io/crates/v/shgnn.svg)](https://crates.io/crates/shgnn)
-[![Documentation](https://docs.rs/shgnn/badge.svg)](https://docs.rs/shgnn)
-[![Build Status](https://github.com/shgnn/shgnn/workflows/CI/badge.svg)](https://github.com/shgnn/shgnn/actions)
-[![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+## Is This Actually Useful?
 
-A high-performance, neuromorphic computing framework implementing Spiking Hypergraph Neural Networks in Rust.
+Theoretically Promising: Hypergraphs naturally encode multi-neuron interactions, which SNNs badly need.
+
+Training Flexibility: Allows learning to occur at the level of groups, not individuals—better for gradient-free or biologically plausible methods.
+
+ More Robust Representations: Hyperpaths can encode complex motifs, reduce sensitivity to individual spike timings.
+
+⚠️ Challenges:
+	•	Building efficient hardware for this is very hard (hypergraph inference is more memory-intensive).
+	•	Designing meaningful hypergraph topologies from real data is non-trivial—need a way to learn or regularize structure.
+	•	Theoretical frameworks are nascent—not many tools or convergence guarantees.
+
 
 ## Overview
 
-SHGNN is a blah blah blah neuromorphic computing that blah blah blah biological realism? of spiking neural networks with the something better of hypergraph structures. Built in Rust, it achieves  neuromorphic efficiency through event-driven computation, zero-cost abstractions, and memory-safe spike routing.
+SHGNN is a spiking neural networks with the substrate bein of hypergraph structures. Built in Rust to achieve morelike neuromorphic efficiency through event-driven computation, zero-cost abstractions, and memory-safe spike routing.
 
-### Key Features
 
-- **🚀 High Performance**:  (untested but shouid be at least) 10-15x faster than equivalent Python implementations
-- **⚡ Event-Driven**: Asynchronous spike processing with sub-millisecond latency  
-- **🔬 Biologically Realistic**: Accurate membrane dynamics and STDP learning
-- **🌐 Multi-Platform**: Runs on embedded devices, desktops, and web browsers
-- **🧮 Hardware Acceleration**: RRAM/FPGA integration support
-- **📊 Real-Time Processing**: Deterministic timing for robotics and control
-- **🔗 Hypergraph Networks**: Complex multi-synaptic connections beyond pairwise interactions
-
-## 🚀 Quick Start
-
-### Installation
-
-Add to your `Cargo.toml`:
-
-```toml
-[dependencies]
-shgnn = "0.1"
-```
-
-### Basic Example
+###  Example
 
 ```rust
 use shgnn::prelude::*;
@@ -131,7 +119,6 @@ let intention = bci.decode_intention(neural_signals).await?;
 
 ## 🏗️ Architecture
 
-SHGNN implements a sophisticated neuromorphic architecture:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
@@ -152,48 +139,13 @@ SHGNN implements a sophisticated neuromorphic architecture:
 3. **Plasticity Rules**: STDP, Homeostatic, BCM, Oja
 4. **Encoding Schemes**: Rate-based, Temporal, Population, Phase
 
-## 📊 Performance (Aiming for)
-
-Benchmark results on Intel i7-10700K with 10,000 neuron network:
-
-| Metric | SHGNN (Rust) | Brian2 (Python) | Improvement |
-|--------|--------------|-----------------|-------------|
-| Simulation Time | 245ms | 3420ms | **14.0x faster** |
-| Memory Usage | 12.4MB | 156.8MB | **12.6x less** |
-| Energy Consumption | 2.1mJ | 18.7mJ | **8.9x efficient** |
-| Throughput | 1.25M spikes/s | 89K spikes/s | **14.0x higher** |
-
-## 🌟 Platform Support
-
-| Platform | Status | Features |
-|----------|--------|----------|
-| **Linux** | ✅ Full | All features, CUDA/OpenCL |
-| **Windows** | ✅ Full | All features, DirectML |
-| **macOS** | ✅ Full | All features, Metal |
-| **WebAssembly** | ✅ Full | Browser deployment, visualization |
-| **Embedded ARM** | ✅ Core | No-std, real-time guarantees |
-| **RISC-V** | 🔄 WIP | Experimental support |
-
-## 📚 Documentation 
-
-- **[API Documentation](https://docs.rs/shgnn)** - Complete API reference
-- **[User Guide](docs/guide/README.md)** - Getting started and tutorials
-- **[Architecture Guide](docs/architecture/README.md)** - System design and internals
-- **[Performance Guide](docs/performance/README.md)** - Optimization strategies
-- **[Examples](examples/)** - Practical use cases and demos
-
-## 🧪 Examples
-
-Check out our comprehensive examples:
 
 - **[Basic Network](examples/basic-network/)** - Simple SHGNN setup
 - **[Robotics Control](examples/robotics-control/)** - Real-time robot control
 - **[Edge AI](examples/edge-ai/)** - Embedded pattern recognition
 - **[BCI Demo](examples/bci-demo/)** - Brain-computer interface
 
-## 🤝 Contributing 
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Setup
 
@@ -216,29 +168,3 @@ cargo test --workspace
 cargo bench --workspace
 ```
 
-## 📄 License
-
-This project is licensed under either of
-
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option.
-
-## 🙏 Acknowledgments
-
-- Inspired by deep desire to assert my intellectiual dominance over chatgpt's bitch ass.....
-- https://ncg.ucsc.edu/ biological neural networks and neuromorphic computing research....
-- Built with the amazing Rust ecosystem
-  
-
-## 📞 Contact
-
-- **Website**: 
-- **Documentation**: 
-- **Issues**: [GitHub Issues](https://github.com/shnn-project/shgnn/shgnn/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/shgnn/shgnn/discussions)
-
----
-
-*SHGNN: Bridging something and something else systems through neuromorphic computing.*
