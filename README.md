@@ -1,5 +1,17 @@
   
-# Spiking Hypergraph Neural Networks in Rust.
+# Spiking Hypergraph Neural Networks in Rust
+
+> ⚠️ **PROJECT UNDER CONSTRUCTION** ⚠️
+>
+> **Hypergraph Modularization in Progress**: We are currently refactoring this project to separate hypergraph-specific functionality from generic spiking neural network primitives. This will enable users to employ any data structure (traditional graphs, matrices, sparse matrices, etc.) for neural connectivity while preserving all neuromorphic capabilities.
+>
+> **Current Status**:
+> - ✅ Core neuromorphic primitives (neurons, spikes, plasticity, encoding) are already data-structure agnostic
+> - 🚧 Creating connectivity abstraction layer to support multiple data structures
+> - 🚧 Implementing traditional graph, matrix, and sparse matrix connectivity options
+> - 📋 See [`HYPERGRAPH_MODULARIZATION_PLAN.md`](HYPERGRAPH_MODULARIZATION_PLAN.md) for detailed implementation plan
+>
+> **Impact**: Existing hypergraph functionality will be preserved with backward compatibility. New users will benefit from choosing optimal data structures for their specific use cases.
 
 ## Is This Actually Useful?
 
